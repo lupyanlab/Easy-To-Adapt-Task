@@ -49,9 +49,14 @@ app.post('/trials', function (req, res) {
   csv({delimiter: ','})
   .fromFile('./trials/'+sessionId+'.csv')
   .on('json',(jsonObj)=>{
+    console.log(jsonObj)
       // combine csv header row and csv line to a json object
       // jsonObj.a ==> 1 or 4
       jsonObj.choices = jsonObj.choices.split(',');
+      Object.keys(jsonObj).forEach((k) => {
+        if (jsonObj[k] == "True") jsonObj[k] = true;
+        if (jsonObj[k] == "False") jsonObj[k] = false;
+      })
       trials.push(jsonObj);
   })
   .on('done',(error)=>{
