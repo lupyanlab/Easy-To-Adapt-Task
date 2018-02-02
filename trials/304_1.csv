@@ -1,5 +1,3 @@
-filename,fileType,corectAnswer,choices
-gb_cook.wav,audio,throw,"grab,throw,think,move,stay,see,hear,smell,have"
-301_2_bear_voc.wav.m4a,audio,think,"grab,throw,think,move,stay,see,hear,smell,have"
-301_1_big_gest.mp4,video,stay,"grab,throw,think,move,stay,see,hear,smell,have"
-sampleVideo2.mov,video,stay,"grab,throw,think,move,stay,see,hear,smell,have"
+word_to_rate    choices multiple_choices_allowed    randomize_choices   min_choice  max_choice
+a_string    ['choice1', 'choice2', 'choice3', 'choice4']    True    False   3   4
+
