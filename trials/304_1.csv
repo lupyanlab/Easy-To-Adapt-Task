@@ -1,2 +1,0 @@
-word_to_rate,choices,multiple_choices_allowed,randomize_choices,,max_choice
-a_string,"choice1,choice2,choice3,choice4",True,False,3,4

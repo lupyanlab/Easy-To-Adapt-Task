@@ -42,7 +42,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
     let welcome_block = {
         type: "text",
         cont_key: ' ',
-        text: `<h1>Video/Audio Experiment</h1>
+        text: `<h1>Easy-To_Adapt Task</h1>
         <p class="lead">Welcome to the experiment. Thank you for participating! Press SPACE to begin.</p>`
     };
 
@@ -55,8 +55,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
         key_forward: ' ',
         key_backward: 8,
         pages: [
-            `<p class="lead">In this experiment, you will see videos or listen to audio, and your job is to select the answer that describes the stimulus shown.
-            </p> <p class="lead">Use the your mouse to click on your answer. Then, click on the displayed button to submit your answer.
+            `<p class="lead">Insert Instructions
             </p> ${continue_space}`,
         ]
     };
@@ -88,65 +87,9 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
         if (trial.fileType == 'video') {
             stimHTML = `
             <div class="row center-xs center-sm center-md center-lg center-block">
-                <video id="stim" style="max-width:640px;max-height:356px;">
-                    <source src="./stims/videos/${trial.filename}" type="video/mp4">
-                    <source src="./stims/videos/${trial.filename}" type="video/ogg">
-                    Your browser does not support HTML5 video.
-                </video>
-            </div>
-            <br>
-            <div class="row center-xs center-sm center-md center-lg center-block">
-                <a id="play" class="btn btn-default" onclick="play()"><i class="fa fa-play fa-3x" aria-hidden="true"></i></a>
-            </div>
-            <script>
-                document.plays = 0;
-                var media = document.getElementById("stim");
-                function play() {
-                    media.play();
-                }
-                media.onplay = function() {
-                    document.plays++;
-                    $('#play').addClass('disabled');
-                };
-                media.onended = function() {
-                    $('#play').removeClass('disabled');
-                }
-            </script>`;
+                <h1>${trial.word_to_rate}</h1>
+            </div>`;
         }
-        else if (trial.fileType == 'audio') {
-            stimHTML = `
-            <div class="row center-xs center-sm center-md center-lg center-block">
-                <img id="audio-placeholder" src="img/audio.png" width="640" height=356" />
-                <audio id="stim" style="max-width:640px;max-height:356px;">
-                    <source src="./stims/audios/${trial.filename}" type="audio/wav">
-                    <source src="./stims/audios/${trial.filename}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
-            <br>
-            <div class="row center-xs center-sm center-md center-lg center-block">
-                <a id="play" class="btn btn-default" onclick="play()"><i class="fa fa-play fa-3x" aria-hidden="true"></i></a>
-            </div>
-            <script>
-                document.plays = 0;
-                var media = document.getElementById("stim");
-                function play() {
-                    media.play();
-                }
-                media.onplay = function() {
-                    document.plays++;
-                    $('#play').addClass('disabled');
-                    $('#audio-placeholder').css('-webkit-filter', 'invert(20%)');
-                };
-                media.onended = function() {
-                    $('#audio-placeholder').css('-webkit-filter', 'invert(0%)');
-                    $('#play').removeClass('disabled');
-                }
-            </script>`
-        }
-        // for (let img of trials.images[category]) {
-        //     stimHTML += `<img src="${img}" style="max-width:16%;"/>`
-        // }
 
         let html = `
         <canvas width="800px" height="25px" id="bar"></canvas>
@@ -169,6 +112,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
             required: required,
             horizontal: true,
 
+            // TODO: Switch to SurveyJS (switch between checkboxes and radio buttons)
             on_finish: function (data) {
                 console.log(JSON.parse(data.responses));
                 data.responses = JSON.parse(data.responses);
@@ -205,57 +149,6 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
         ]
     };
     timeline.push(questionsInstructions);
-
-
-    // window.questions = questions;    // allow surveyjs to access questions
-    // let IRQTrial = {
-    //     type: 'html',
-    //     url: "./IRQ/IRQ.html",
-    //     cont_btn: "IRQ-cmplt",
-    //     check_fn: function () {
-    //         if (IRQIsCompleted()) {
-    //             console.log(getIRQResponses());
-    //             let IRQ = Object.assign({ subjCode }, getIRQResponses().answers);
-    //             // POST demographics data to server
-    //             $.ajax({
-    //                 url: 'http://' + document.domain + ':' + PORT + '/IRQ',
-    //                 type: 'POST',
-    //                 contentType: 'application/json',
-    //                 data: JSON.stringify(IRQ),
-    //                 success: function (data) {
-    //                     // console.log(data);
-    //                     // $('#surveyElement').remove();
-    //                     // $('#surveyResult').remove();
-    //                 }
-    //             })
-    //             return true;
-    //         }
-    //         else {
-    //             return false;
-    //         }
-    //     }
-    // };
-    // timeline.push(IRQTrial);
-
-    let didNotPlayQuestionTrial = {
-        type: 'survey-text',
-        questions: [['Did any of the sounds or video not play?']],
-        on_finish: function (data) {
-            console.log(data.responses);
-            if (data.responses.Q0) {
-                $.ajax({
-                    url: 'http://' + document.domain + ':' + PORT + '/not_play',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ subjCode, response: data.responses.Q0 }),
-                    success: function () {
-                    }
-                })
-            }
-
-        }
-    }
-    timeline.push(didNotPlayQuestionTrial);
 
     let demographicsTrial = {
         type: 'html',

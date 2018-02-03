@@ -1,0 +1,12 @@
+{
+	"trials": [
+		{
+			"word_to_Rate": "a_string",
+			"choices": ["choice1", "choice2", "choice3", "choice4"],
+			"multiple_choices_allowed": true,
+			"randomize_choices": true,
+			"min_choice": 3,
+			"max_choice": 4
+		}
+	]
+}
