@@ -36,6 +36,8 @@ app.listen(app.get('port'), function () {
   console.log("Node app is running at http://localhost:" + app.get('port'))
 })
 
+fs.mkdirSync('data');
+fs.mkdirSync('demographics');
 
 // POST endpoint for requesting trials
 app.post('/trials', function (req, res, next) {
