@@ -106,13 +106,29 @@ app.post('/data', function (req, res, next) {
 
 
 // POST endpoint for receiving demographics responses
-app.post('/demographics', function (req, res) {
-  console.log('demographics post request received');
-
-  // Parses the trial response data to csv
+app.post('/demographics', function (req, res, next) {
   let demographics = req.body;
+  console.log('demographics post request received');
   console.log(demographics);
   let path = 'demographics/' + demographics.subjCode + '_demographics.csv';
+  fs.access(path, (err) => {
+    if (err && err.code === 'ENOENT') {
+      jsonfile.writeFile(path, { trials: [] }, (err) => {
+        if (err) {
+          res.send({ success: false });
+          return next(err);
+        }
+        next();
+      })
+    }
+    else next();
+  })
+
+}, (req, res, next) => {
+  // Parses the trial response data to csv
+  let demographics = req.body;
+  let path = 'demographics/' + demographics.subjCode + '_demographics.csv';
+
   let headers = Object.keys(demographics);
   writer = csvWriter({ headers: headers });
 
@@ -121,4 +137,4 @@ app.post('/demographics', function (req, res) {
   writer.end();
 
   res.send({ success: true });
-})
+});
