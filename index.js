@@ -36,9 +36,6 @@ app.listen(app.get('port'), function () {
   console.log("Node app is running at http://localhost:" + app.get('port'))
 })
 
-fs.mkdirSync('data');
-fs.mkdirSync('demographics');
-
 // POST endpoint for requesting trials
 app.post('/trials', function (req, res, next) {
   console.log("trials post request received");
@@ -73,18 +70,25 @@ app.post('/data', function (req, res, next) {
   // Create new data file if does not exist
   let response = req.body;
   let path = 'data/' + response.workerId + '_data.json';
-  fs.access(path, (err) => {
+  fs.access('./data', (err) => {
     if (err && err.code === 'ENOENT') {
-      jsonfile.writeFile(path, { trials: [] }, (err) => {
-        if (err) {
-          res.send({ success: false });
-          return next(err);
-        }
-        next();
-      })
+      fs.mkdir('./data', () => {
+        fs.access(path, (err) => {
+          if (err && err.code === 'ENOENT') {
+            jsonfile.writeFile(path, { trials: [] }, (err) => {
+              if (err) {
+                res.send({ success: false });
+                return next(err);
+              }
+              next();
+            })
+          }
+          else next();
+        })
+      });
     }
-    else next();
-  })
+  });
+
 }, (req, res, next) => {
   // Write response to json
   let response = req.body;
@@ -113,18 +117,26 @@ app.post('/demographics', function (req, res, next) {
   console.log('demographics post request received');
   console.log(demographics);
   let path = 'demographics/' + demographics.subjCode + '_demographics.csv';
-  fs.access(path, (err) => {
+
+  fs.access('./demographics', (err) => {
     if (err && err.code === 'ENOENT') {
-      jsonfile.writeFile(path, { trials: [] }, (err) => {
-        if (err) {
-          res.send({ success: false });
-          return next(err);
-        }
-        next();
-      })
+      fs.mkdir('./demographics', () => {
+
+        fs.access(path, (err) => {
+          if (err && err.code === 'ENOENT') {
+            jsonfile.writeFile(path, { trials: [] }, (err) => {
+              if (err) {
+                res.send({ success: false });
+                return next(err);
+              }
+              next();
+            })
+          }
+          else next();
+        })
+      });
     }
-    else next();
-  })
+  });
 
 }, (req, res, next) => {
   // Parses the trial response data to csv
