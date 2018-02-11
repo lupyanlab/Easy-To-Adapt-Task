@@ -3,8 +3,8 @@
 You must have nodjs installed: https://nodejs.org. Make sure Python 2 is installed.
 
 ```
-git clone https://github.com/kmui2/VideoAudioExperiment
-cd VideoAudioExperiment
+git clone https://github.com/kmui2/Easy-To-Adapt
+cd Easy-To-Adapt
 sudo npm install -g nodemon
 npm install
 npm start
