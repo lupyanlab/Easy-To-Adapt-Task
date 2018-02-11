@@ -1,9 +1,9 @@
 {
 	"trials": [
 		{
-			"word_to_Rate": "a_string",
+			"word_to_rate": "a_string",
 			"choices": ["choice1", "choice2", "choice3", "choice4"],
-			"multiple_choices_allowed": true,
+			"multiple_choices_allowed": false,
 			"randomize_choices": true,
 			"min_choice": 3,
 			"max_choice": 4

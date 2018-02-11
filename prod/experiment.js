@@ -8,6 +8,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
 
     jsPsych.data.addProperties({
         subject: participantID,
+        activeID: participantID,
         condition: 'explicit',
         group: 'shuffled',
         workerId: workerId,
@@ -40,9 +41,9 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
     // timeline.push(consent);
 
     let welcome_block = {
-        type: "text",
-        cont_key: ' ',
-        text: `<h1>Video/Audio Experiment</h1>
+        type: "html-keyboard-response",
+        choices: [32],
+        stimulus: `<h1>Easy To Adapt Task</h1>
         <p class="lead">Welcome to the experiment. Thank you for participating! Press SPACE to begin.</p>`
     };
 
@@ -52,11 +53,10 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
 
     let instructions = {
         type: "instructions",
-        key_forward: ' ',
-        key_backward: 8,
+        key_forward: 'space',
+        key_backward: 'backspace',
         pages: [
-            `<p class="lead">In this experiment, you will see videos or listen to audio, and your job is to select the answer that describes the stimulus shown.
-            </p> <p class="lead">Use the your mouse to click on your answer. Then, click on the displayed button to submit your answer.
+            `<p class="lead">Insert Instructions
             </p> ${continue_space}`,
         ]
     };
@@ -69,136 +69,108 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
 
     // Pushes each audio trial to timeline
     for (let trial of trials) {
-
+        let choices = trial.randomize_choices ? _.shuffle(trial.choices) : trial.choices;
         // Empty Response Data to be sent to be collected
         let response = {
             workerId: subjCode,
             trialNum: trial_number,
-            filename: trial.filename,
-            fileType: trial.fileType,
-            correctAnswer: trial.corectAnswer,
-            choices: trial.choices,
-            isRight: false,
+            word_to_rate: trial.word_to_rate,
+            choices: choices,
+            multiple_choices_allowed: trial.multiple_choices_allowed,
+            min_choice: trial.min_choice,
+            max_choice: trial.max_choice,
             expTimer: -1,
-            chosen: -1,
+            chosen: null,
             rt: -1,
-            plays: -1
         }
-        let stimHTML = '';
-        if (trial.fileType == 'video') {
-            stimHTML = `
+        let stimHTML = `
             <div class="row center-xs center-sm center-md center-lg center-block">
-                <video id="stim" style="max-width:640px;max-height:356px;">
-                    <source src="./stims/videos/${trial.filename}" type="video/mp4">
-                    <source src="./stims/videos/${trial.filename}" type="video/ogg">
-                    Your browser does not support HTML5 video.
-                </video>
-            </div>
-            <br>
-            <div class="row center-xs center-sm center-md center-lg center-block">
-                <a id="play" class="btn btn-default" onclick="play()"><i class="fa fa-play fa-3x" aria-hidden="true"></i></a>
-            </div>
-            <script>
-                document.plays = 0;
-                var media = document.getElementById("stim");
-                function play() {
-                    media.play();
-                }
-                media.onplay = function() {
-                    document.plays++;
-                    $('#play').addClass('disabled');
-                };
-                media.onended = function() {
-                    $('#play').removeClass('disabled');
-                }
-            </script>`;
-        }
-        else if (trial.fileType == 'audio') {
-            stimHTML = `
-            <div class="row center-xs center-sm center-md center-lg center-block">
-                <img id="audio-placeholder" src="img/audio.png" width="640" height=356" />
-                <audio id="stim" style="max-width:640px;max-height:356px;">
-                    <source src="./stims/audios/${trial.filename}" type="audio/wav">
-                    <source src="./stims/audios/${trial.filename}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
-            <br>
-            <div class="row center-xs center-sm center-md center-lg center-block">
-                <a id="play" class="btn btn-default" onclick="play()"><i class="fa fa-play fa-3x" aria-hidden="true"></i></a>
-            </div>
-            <script>
-                document.plays = 0;
-                var media = document.getElementById("stim");
-                function play() {
-                    media.play();
-                }
-                media.onplay = function() {
-                    document.plays++;
-                    $('#play').addClass('disabled');
-                    $('#audio-placeholder').css('-webkit-filter', 'invert(20%)');
-                };
-                media.onended = function() {
-                    $('#audio-placeholder').css('-webkit-filter', 'invert(0%)');
-                    $('#play').removeClass('disabled');
-                }
-            </script>`
-        }
-        // for (let img of trials.images[category]) {
-        //     stimHTML += `<img src="${img}" style="max-width:16%;"/>`
-        // }
+                <h1>${trial.word_to_rate}</h1>
+            </div>`;
 
-        let html = `
-        <canvas width="800px" height="25px" id="bar"></canvas>
-        <div class="progress progress-striped active">
-            <div class="progress-bar progress-bar-success" style="width: ${trial_number / num_trials * 100}%;"></div>
-        </div>
-        <h6 style="text-align:center;">Trial ${trial_number} of ${num_trials}</h6>
-        `+ stimHTML + ``;
-
-        let questions = ['<h4>Which of the following words best describes the above?</h4>'];
-        let required = [true];
-        let options = [trial.choices]
-
-        // Picture Trial
-        let wordTrial = {
-            type: 'survey-multi-choice',
-            preamble: html,
-            questions: questions,
-            options: options,
-            required: required,
-            horizontal: true,
-
-            on_finish: function (data) {
-                console.log(JSON.parse(data.responses));
-                data.responses = JSON.parse(data.responses);
-                response.chosen = data.responses.Q0;
-                response.rt = data.rt;
-                response.expTimer = data.time_elapsed / 1000;
-                response.isRight = response.chosen == trial.correctAnswer;
-                response.plays = document.plays;
-
-                // POST response data to server
-                $.ajax({
-                    url: 'http://' + document.domain + ':' + PORT + '/data',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(response),
-                    success: function () {
-                        console.log(response);
-                    }
-                })
+        let questions = [
+            {
+                prompt: `<h4></h4>${trial.multiple_choices_allowed ? `<span style='font-size:15px'>Please pick between ${trial.min_choice} and ${trial.max_choice} choices.</span>` : ''}`,
+                options: trial.randomize_choices ? _.shuffle(trial.choices) : trial.choices,
+                horizontal: true,
+                required: true
             }
+        ];
+        let required = true;
+
+        if (trial.multiple_choices_allowed) {
+            let multiSelectTrial = {
+                type: 'survey-multi-select',
+                preamble: stimHTML,
+                questions: questions,
+                required: required,
+                required_msg: `Please pick between ${trial.min_choice} and ${trial.max_choice} choices.`,
+                min_choice: trial.min_choice,
+                max_choice: trial.max_choice,
+
+                on_finish: function (data) {
+                    console.log(JSON.parse(data.responses));
+
+                    data.responses = JSON.parse(data.responses);
+                    response.chosen = data.responses.Q0;
+                    response.rt = data.rt;
+                    response.expTimer = data.time_elapsed / 1000;
+                    trial_number++;
+                    jsPsych.setProgressBar((trial_number - 1) / num_trials)
+
+                    // POST response data to server
+                    $.ajax({
+                        url: 'http://' + document.domain + ':' + PORT + '/data',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(response),
+                        success: function () {
+                            console.log(response);
+                        }
+                    })
+                }
+            }
+            timeline.push(multiSelectTrial);
         }
-        timeline.push(wordTrial);
-        trial_number++;
+        else {
+            let multiChoiceTrial = {
+                type: 'survey-multi-choice',
+                preamble: stimHTML,
+                questions: questions,
+                required_msg: `Please pick a choice.`,
+
+                // TODO: Switch to SurveyJS (switch between checkboxes and radio buttons)
+                on_finish: function (data) {
+                    console.log(JSON.parse(data.responses));
+
+                    data.responses = JSON.parse(data.responses);
+                    response.chosen = data.responses.Q0;
+                    response.rt = data.rt;
+                    response.expTimer = data.time_elapsed / 1000;
+                    trial_number++;
+                    jsPsych.setProgressBar((trial_number - 1) / num_trials)
+
+                    // POST response data to server
+                    $.ajax({
+                        url: 'http://' + document.domain + ':' + PORT + '/data',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(response),
+                        success: function () {
+                            console.log(response);
+                        }
+                    })
+                }
+            }
+            timeline.push(multiChoiceTrial);
+        }
     };
 
 
     let questionsInstructions = {
         type: "instructions",
-        key_forward: ' ',
-        key_backward: 8,
+        key_forward: 'space',
+        key_backward: 'backspace',
         pages: [
             `<p class="lead">This is a filler for instructions for the questions.
             </p> ${continue_space}`,
@@ -206,95 +178,84 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
     };
     timeline.push(questionsInstructions);
 
-
-    // window.questions = questions;    // allow surveyjs to access questions
-    // let IRQTrial = {
-    //     type: 'html',
-    //     url: "./IRQ/IRQ.html",
-    //     cont_btn: "IRQ-cmplt",
-    //     check_fn: function () {
-    //         if (IRQIsCompleted()) {
-    //             console.log(getIRQResponses());
-    //             let IRQ = Object.assign({ subjCode }, getIRQResponses().answers);
-    //             // POST demographics data to server
-    //             $.ajax({
-    //                 url: 'http://' + document.domain + ':' + PORT + '/IRQ',
-    //                 type: 'POST',
-    //                 contentType: 'application/json',
-    //                 data: JSON.stringify(IRQ),
-    //                 success: function (data) {
-    //                     // console.log(data);
-    //                     // $('#surveyElement').remove();
-    //                     // $('#surveyResult').remove();
-    //                 }
-    //             })
-    //             return true;
-    //         }
-    //         else {
-    //             return false;
-    //         }
-    //     }
-    // };
-    // timeline.push(IRQTrial);
-
-    let didNotPlayQuestionTrial = {
-        type: 'survey-text',
-        questions: [['Did any of the sounds or video not play?']],
-        on_finish: function (data) {
-            console.log(data.responses);
-            if (data.responses.Q0) {
-                $.ajax({
-                    url: 'http://' + document.domain + ':' + PORT + '/not_play',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ subjCode, response: data.responses.Q0 }),
-                    success: function () {
-                    }
-                })
-            }
-
-        }
-    }
-    timeline.push(didNotPlayQuestionTrial);
-
+    let demographicsResponses = {};
     let demographicsTrial = {
-        type: 'html',
-        url: "./demographics/demographics.html",
-        cont_btn: "demographics-cmplt",
-        check_fn: function () {
-            if (demographicsIsCompleted()) {
-                console.log(getDemographicsResponses());
-                let demographics = Object.assign({ subjCode }, getDemographicsResponses());
-                // POST demographics data to server
-                $.ajax({
-                    url: 'http://' + document.domain + ':' + PORT + '/demographics',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(demographics),
-                    success: function () {
-                    }
+        type: 'external-html',
+        url: "./demographics.html",
+        cont_btn: 'cmplt',
+        // force_refresh: true,
+        on_load: function () {
+            waitForElement('#surveyElement', () => {
+                let survey = new Survey.Model({
+                    questions: [
+                        { type: "radiogroup", name: "gender", isRequired: true, title: "What is your gender?", choices: ["Male", "Female", "Other", "Perfer not to say"] },
+
+                        { type: "radiogroup", name: "native", isRequired: true, title: "Are you a native English speaker", choices: ["Yes", "No"] },
+                        { type: "text", name: "native language", visibleIf: "{native}='No'", title: "Please indicate your native language or languages:" },
+
+                        { type: "text", name: "languages", title: "What other languages do you speak?" },
+
+                        { type: "text", name: "age", title: "What is your age?", width: "auto" },
+
+                        { type: "radiogroup", name: "degree", isRequired: true, title: "What is the highest degree or level of shcool you have completed/ If currently enrolled, highest degree received.", choices: ["Less than high school", "High school diploma", "Some college, no degree", "associates|Associate's degree", "bachelors|Bachelor's degree", "masters|Master's degree", "PhD, law, or medical degree", "Prefer not to say"] },
+                        { type: "text", name: "favorite hs subject", visibleIf: "{degree}='Less than high school' or {degree}='High school diploma' or {degree}='Some college, no degree'", title: "What was your favorite subject in high school?" },
+                        { type: "text", name: "college", visibleIf: "{degree}='associates' or {degree}='bachelors' or {degree}='masters' or {degree}='PhD, law, or medical degree'", title: "What did you study in college?" },
+                        { type: "text", name: "grad", visibleIf: "{degree}='masters' or {degree}='PhD, law, or medical degree'", title: "What did you study in graduate school?" },
+                    ]
+                });
+                survey.showNavigationButtons = false;
+
+                survey.onComplete.add(function (result) {
+                    demographicsResponses = result.data;
+                    $('#surveyComplete').remove();
+                    $('#cmplt').css('display', 'inherit');
+                });
+
+                $("#surveyElement").Survey({
+                    model: survey
+                });
+                // survey.showCompletedPage = false;
+                survey.completedHtml = '<h4>Submitted! Click on the button below to finish the experiment.</h4>'
+                waitForElement('#surveyComplete', () => {
+                    $('#surveyComplete').on('click', () => {
+                        survey.completeLastPage();
+                    })
+                    $('#surveyComplete').on('click', () => {
+                        console.log('ehllo')
+                    })
                 })
-                return true;
-            }
-            else {
-                return false;
-            }
+            })
+        },
+        on_finish: function () {
+
+            console.log(demographicsResponses);
+            let demographics = Object.assign({ subjCode }, demographicsResponses);
+            // POST demographics data to server
+            $.ajax({
+                url: 'http://' + document.domain + ':' + PORT + '/demographics',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(demographics),
+                success: function () {
+                }
+            })
+
+            let endmessage = `
+                <p class="lead">Thank you for participating! Your completion code is ${participantID}. Copy and paste this in 
+                MTurk to get paid. If you have any questions or comments, please email jsulik@wisc.edu.</p>
+                
+                <h3>Debriefing </h3>
+                <p class="lead">
+                Thank you for your participation. The study is designed to collect information about the different ways 
+                in which people typically represent thoughts in their mind. The responses will be used in the 
+                development of a shorter questionnaire to assess differences in these representations. 
+                </p>
+                `
+            jsPsych.endExperiment(endmessage);
         }
     };
     timeline.push(demographicsTrial);
 
-    let endmessage = `
-    <p class="lead">Thank you for participating! Your completion code is ${participantID}. Copy and paste this in 
-    MTurk to get paid. If you have any questions or comments, please email jsulik@wisc.edu.</p>
-    
-    <h3>Debriefing </h3>
-    <p class="lead">
-    Thank you for your participation. The study is designed to collect information about the different ways 
-    in which people typically represent thoughts in their mind. The responses will be used in the 
-    development of a shorter questionnaire to assess differences in these representations. 
-    </p>
-    
-    `
 
 
     let images = [];
@@ -311,9 +272,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
             timeline: timeline,
             fullscreen: FULLSCREEN,
             show_progress_bar: true,
-            on_finish: function (data) {
-                jsPsych.endExperiment(endmessage);
-            }
+            auto_update_progress_bar: false
         });
     }
 }

@@ -45,12 +45,12 @@ app.post('/trials', function (req, res, next) {
   let sessionId = req.body.sessionId;
   console.log(req.body);
 
-  let trials = [];
-  jsonfile.readFile('./trials/' + sessionId + '.json', (err, trials) => {
+  jsonfile.readFile('./trials/' + sessionId + '.json', (err, json) => {
     if (err) {
       res.send({ success: false });
       return next(err);
     }
+    let trials = json.trials;
     console.log(trials)
     fs.readFile('IRQ_questions.txt', (err, file) => {
       if (err) {
@@ -70,7 +70,7 @@ app.post('/data', function (req, res, next) {
 
   // Create new data file if does not exist
   let response = req.body;
-  let path = 'data/' + response.subjCode + '_data.json';
+  let path = 'data/' + response.workerId + '_data.json';
   fs.access(path, (err) => {
     if (err && err.code === 'ENOENT') {
       jsonfile.writeFile(path, { trials: [] }, (err) => {
@@ -86,7 +86,7 @@ app.post('/data', function (req, res, next) {
 }, (req, res, next) => {
   // Write response to json
   let response = req.body;
-  let path = 'data/' + response.subjCode + '_data.json';
+  let path = 'data/' + response.workerId + '_data.json';
   console.log(response);
   jsonfile.readFile(path, (err, obj) => {
     if (err) {
@@ -105,29 +105,6 @@ app.post('/data', function (req, res, next) {
 });
 
 
-// POST endpoint for receiving video and sounds did not play responses
-app.post('/not_play', function (req, res) {
-  console.log('not_play post request received');
-
-  // Parses the trial response data to csv
-  let response = req.body;
-  console.log(response);
-  let path = 'not_play/' + response.subjCode + '.csv';
-  let headers = Object.keys(response);
-  fs.access(path, (err) => {
-    if (err && err.code === 'ENOENT') 
-      writer = csvWriter({ headers: headers });
-    else
-      writer = csvWriter({ sendHeaders: false });
-  });
-
-  writer.pipe(fs.createWriteStream(path, { flags: 'a' }));
-  writer.write(response);
-  writer.end();
-
-  res.send({ success: true });
-})
-
 // POST endpoint for receiving demographics responses
 app.post('/demographics', function (req, res) {
   console.log('demographics post request received');
@@ -141,25 +118,6 @@ app.post('/demographics', function (req, res) {
 
   writer.pipe(fs.createWriteStream(path, { flags: 'w' }));
   writer.write(demographics);
-  writer.end();
-
-  res.send({ success: true });
-})
-
-
-// POST endpoint for receiving after question responses
-app.post('/IRQ', function (req, res) {
-  console.log('IRQ post request received');
-
-  // Parses the trial response data to csv
-  let IRQ = req.body;
-  console.log(IRQ);
-  let path = 'IRQ/' + IRQ.subjCode + '_IRQ.csv';
-  let headers = Object.keys(IRQ);
-  writer = csvWriter({ headers: headers });
-
-  writer.pipe(fs.createWriteStream(path, { flags: 'w' }));
-  writer.write(IRQ);
   writer.end();
 
   res.send({ success: true });

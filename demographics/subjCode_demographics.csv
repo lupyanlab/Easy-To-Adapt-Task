@@ -1,2 +1,2 @@
-subjCode,gender,native,degree
-subjCode,Female,No,"Some college, no degree"
+subjCode,gender,degree,native
+subjCode,Other,bachelors,No
