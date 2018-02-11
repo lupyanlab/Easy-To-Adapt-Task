@@ -69,46 +69,52 @@ app.post('/data', function (req, res, next) {
 
   // Create new data file if does not exist
   let response = req.body;
-  let path = 'data/' + response.workerId + '_data.json';
   fs.access('./data', (err) => {
     if (err && err.code === 'ENOENT') {
       fs.mkdir('./data', () => {
-        fs.access(path, (err) => {
-          if (err && err.code === 'ENOENT') {
-            jsonfile.writeFile(path, { trials: [] }, (err) => {
-              if (err) {
-                res.send({ success: false });
-                return next(err);
-              }
-              next();
-            })
-          }
-          else next();
-        })
+        next();
       });
     }
+    else next();
   });
 
-}, (req, res, next) => {
-  // Write response to json
-  let response = req.body;
-  let path = 'data/' + response.workerId + '_data.json';
-  console.log(response);
-  jsonfile.readFile(path, (err, obj) => {
-    if (err) {
-      res.send({ success: false });
-      return next(err);
-    }
-    obj.trials.push(response);
-    jsonfile.writeFile(path, obj, (err) => {
+},
+  (req, res, next) => {
+    let response = req.body;
+    let path = 'data/' + response.workerId + '_data.json';
+    fs.access(path, (err) => {
+      if (err && err.code === 'ENOENT') {
+        jsonfile.writeFile(path, { trials: [] }, (err) => {
+          if (err) {
+            res.send({ success: false });
+            return next(err);
+          }
+          next();
+        })
+      }
+      else next();
+    })
+  },
+  (req, res, next) => {
+    // Write response to json
+    let response = req.body;
+    let path = 'data/' + response.workerId + '_data.json';
+    console.log(response);
+    jsonfile.readFile(path, (err, obj) => {
       if (err) {
         res.send({ success: false });
         return next(err);
       }
-      res.send({ success: true });
+      obj.trials.push(response);
+      jsonfile.writeFile(path, obj, (err) => {
+        if (err) {
+          res.send({ success: false });
+          return next(err);
+        }
+        res.send({ success: true });
+      })
     })
-  })
-});
+  });
 
 
 // POST endpoint for receiving demographics responses
@@ -121,34 +127,39 @@ app.post('/demographics', function (req, res, next) {
   fs.access('./demographics', (err) => {
     if (err && err.code === 'ENOENT') {
       fs.mkdir('./demographics', () => {
-
-        fs.access(path, (err) => {
-          if (err && err.code === 'ENOENT') {
-            jsonfile.writeFile(path, { trials: [] }, (err) => {
-              if (err) {
-                res.send({ success: false });
-                return next(err);
-              }
-              next();
-            })
-          }
-          else next();
-        })
+        next();
       });
     }
+    else next();
   });
 
-}, (req, res, next) => {
-  // Parses the trial response data to csv
-  let demographics = req.body;
-  let path = 'demographics/' + demographics.subjCode + '_demographics.csv';
+},
+  (req, res, next) => {
+    let demographics = req.body;
+    let path = 'demographics/' + demographics.subjCode + '_demographics.csv';
+    fs.access(path, (err) => {
+      if (err && err.code === 'ENOENT') {
+        jsonfile.writeFile(path, { trials: [] }, (err) => {
+          if (err) {
+            res.send({ success: false });
+            return next(err);
+          }
+          next();
+        })
+      }
+      else next();
+    })
+  }, (req, res, next) => {
+    // Parses the trial response data to csv
+    let demographics = req.body;
+    let path = 'demographics/' + demographics.subjCode + '_demographics.csv';
 
-  let headers = Object.keys(demographics);
-  writer = csvWriter({ headers: headers });
+    let headers = Object.keys(demographics);
+    writer = csvWriter({ headers: headers });
 
-  writer.pipe(fs.createWriteStream(path, { flags: 'w' }));
-  writer.write(demographics);
-  writer.end();
+    writer.pipe(fs.createWriteStream(path, { flags: 'w' }));
+    writer.write(demographics);
+    writer.end();
 
-  res.send({ success: true });
-});
+    res.send({ success: true });
+  });

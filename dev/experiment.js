@@ -1,5 +1,5 @@
 // Function Call to Run the experiment
-function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitId) {
+function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitId, sessionId) {
     let timeline = [];
 
     // Data that is collected for jsPsych
@@ -82,6 +82,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
             expTimer: -1,
             chosen: null,
             rt: -1,
+            sessionId
         }
         let stimHTML = `
             <div class="row center-xs center-sm center-md center-lg center-block">
