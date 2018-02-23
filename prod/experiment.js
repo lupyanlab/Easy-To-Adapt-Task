@@ -38,7 +38,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
         check_fn: check_consent
     };
 
-    // timeline.push(consent);
+    timeline.push(consent);
 
     let welcome_block = {
         type: "html-keyboard-response",
