@@ -212,7 +212,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
             })
 
             let endmessage = `
-                <p class="lead">Thank you for participating! Your completion code is ${participantID}. Copy and paste this in 
+                <p class="lead">Thank you for participating! Your completion code is <strong>${participantID}</strong>. Copy and paste this in 
                 MTurk to get paid. If you have any questions or comments, please email jsulik@wisc.edu.</p>
                 
                 <h3>Debriefing </h3>
