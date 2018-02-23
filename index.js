@@ -41,23 +41,24 @@ app.post('/trials', function (req, res, next) {
   console.log("trials post request received");
 
   let subjCode = req.body.subjCode;
-  let sessionId = req.body.sessionId;
   console.log(req.body);
-
-  jsonfile.readFile('./trials/' + sessionId + '.json', (err, json) => {
-    if (err) {
-      res.send({ success: false });
-      return next(err);
-    }
-    let trials = json.trials;
-    console.log(trials)
-    fs.readFile('IRQ_questions.txt', (err, file) => {
+  fs.readdir('./trials', (err, filenames) => {
+    let filename = filenames[Math.floor(Math.random()*filenames.length)];
+    jsonfile.readFile('./trials/' + filename, (err, json) => {
       if (err) {
         res.send({ success: false });
         return next(err);
       }
-      let questions = _.shuffle(file.toString().replace(/\r/g, '\n').split('\n')).filter((line) => { return line.replace(/ /g, '').length > 0 });
-      res.send({ success: true, trials: trials, questions: questions });
+      let trials = json.trials;
+      console.log(trials)
+      fs.readFile('IRQ_questions.txt', (err, file) => {
+        if (err) {
+          res.send({ success: false });
+          return next(err);
+        }
+        let questions = _.shuffle(file.toString().replace(/\r/g, '\n').split('\n')).filter((line) => { return line.replace(/ /g, '').length > 0 });
+        res.send({ success: true, trials: trials, questions: questions });
+      })
     })
   })
 })
