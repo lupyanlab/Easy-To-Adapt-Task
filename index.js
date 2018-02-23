@@ -51,14 +51,7 @@ app.post('/trials', function (req, res, next) {
       }
       let trials = json.trials;
       console.log(trials)
-      fs.readFile('IRQ_questions.txt', (err, file) => {
-        if (err) {
-          res.send({ success: false });
-          return next(err);
-        }
-        let questions = _.shuffle(file.toString().replace(/\r/g, '\n').split('\n')).filter((line) => { return line.replace(/ /g, '').length > 0 });
-        res.send({ success: true, trials: trials, questions: questions });
-      })
+      res.send({ success: true, trials: trials });
     })
   })
 })
