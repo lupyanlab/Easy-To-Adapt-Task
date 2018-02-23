@@ -114,8 +114,6 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
                     response.chosen = data.responses.Q0;
                     response.rt = data.rt;
                     response.expTimer = data.time_elapsed / 1000;
-                    trial_number++;
-                    jsPsych.setProgressBar((trial_number - 1) / num_trials)
                     console.log(response);
 
                     // POST response data to server
@@ -128,6 +126,8 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
                             console.log(data);
                         }
                     })
+                    trial_number++;
+                    jsPsych.setProgressBar((trial_number - 1) / num_trials)
                 }
             }
             timeline.push(multiSelectTrial);
