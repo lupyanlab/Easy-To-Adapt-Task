@@ -32,7 +32,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
 
     // declare the block.
     var consent = {
-        type: 'html',
+        type: 'external-html',
         url: "./consent.html",
         cont_btn: "start",
         check_fn: check_consent
@@ -228,23 +228,10 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
     };
     timeline.push(demographicsTrial);
 
-
-
-    let images = [];
-    // add scale pic paths to images that need to be loaded
-    images.push('img/scale.png');
-    for (let i = 1; i <= 7; i++)
-        images.push('img/scale' + i + '.jpg');
-
-    jsPsych.pluginAPI.preloadImages(images, function () { startExperiment(); });
-    document.timeline = timeline;
-    function startExperiment() {
-        jsPsych.init({
-            default_iti: 0,
-            timeline: timeline,
-            fullscreen: FULLSCREEN,
-            show_progress_bar: true,
-            auto_update_progress_bar: false
-        });
-    }
+    jsPsych.init({
+        timeline: timeline,
+        fullscreen: FULLSCREEN,
+        show_progress_bar: true,
+        auto_update_progress_bar: false
+    });
 }
