@@ -42,15 +42,25 @@ app.post('/trials', function (req, res, next) {
 
   let subjCode = req.body.subjCode;
   console.log(req.body);
+  let removeChars = [`['`,`']`];
+  let trials = [];
   fs.readdir('./trials', (err, filenames) => {
     let filename = filenames[Math.floor(Math.random()*filenames.length)];
-    jsonfile.readFile('./trials/' + filename, (err, json) => {
-      if (err) {
-        res.send({ success: false });
-        return next(err);
-      }
-      let trials = json.trials;
-      console.log(trials)
+    csv({delimiter: ','})
+    .fromFile('./trials/'+filename)
+    .on('json',(jsonObj)=>{
+      removeChars.forEach((char) => {
+        jsonObj.choices = jsonObj.choices.replace(char,'')
+      })
+        jsonObj.choices = jsonObj.choices.split("', '");
+        Object.keys(jsonObj).forEach((k) => {
+          if (jsonObj[k] == "True") jsonObj[k] = true;
+          if (jsonObj[k] == "False") jsonObj[k] = false;
+        })
+        trials.push(jsonObj);
+    })
+    .on('done',(error)=>{
+      // console.log(trials)
       res.send({ success: true, trials: trials });
     })
   })
