@@ -13,7 +13,6 @@ $(document).ready(function(){
         // DEFINE workerId, hitId, assignmentId HERE
         //////////////////////////////////////////
         let subjCode = $.urlParam('workerId') || 'unknown';
-        let sessionId = $.urlParam('sessionId') || 'unknown';
         let workerId = 'workerId';
         let assignmentId = 'assignmentId';
         let hitId = 'hitId';
@@ -24,7 +23,7 @@ $(document).ready(function(){
             url: 'http://'+document.domain+':'+PORT+'/trials',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({subjCode, sessionId}),
+            data: JSON.stringify({subjCode}),
             success: function (data) {
                 console.log(data);
                 
