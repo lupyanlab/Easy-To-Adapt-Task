@@ -82,7 +82,7 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
             expTimer: -1,
             chosen: null,
             rt: -1,
-            sessionId
+            file: trial.file
         }
         let stimHTML = `
             <div class="row center-xs center-sm center-md center-lg center-block">
@@ -110,14 +110,13 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
                 max_choice: trial.max_choice,
 
                 on_finish: function (data) {
-                    console.log(JSON.parse(data.responses));
-
                     data.responses = JSON.parse(data.responses);
                     response.chosen = data.responses.Q0;
                     response.rt = data.rt;
                     response.expTimer = data.time_elapsed / 1000;
                     trial_number++;
                     jsPsych.setProgressBar((trial_number - 1) / num_trials)
+                    console.log(response);
 
                     // POST response data to server
                     $.ajax({
@@ -125,8 +124,8 @@ function runExperiment(trials, subjCode, questions, workerId, assignmentId, hitI
                         type: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify(response),
-                        success: function () {
-                            console.log(response);
+                        success: function (data) {
+                            console.log(data);
                         }
                     })
                 }

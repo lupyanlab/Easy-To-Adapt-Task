@@ -60,7 +60,10 @@ app.post('/trials', function (req, res, next) {
         trials.push(jsonObj);
     })
     .on('done',(error)=>{
-      // console.log(trials)
+      trials.forEach((trial) => {
+        trial.file = filename;
+      });
+      console.log(trials)
       res.send({ success: true, trials: trials });
     })
   })
