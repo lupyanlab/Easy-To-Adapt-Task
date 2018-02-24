@@ -15,7 +15,7 @@ $(document).ready(function(){
         let hitId = 'null';
 
         $("form").remove();
-        $("#loading").html('<h2 style="text-align:center;">Loading trials... please wait.</h2> </br> <div  class="col-md-2 col-md-offset-5"><img src="img/preloader.gif"></div>')
+        $("#loading").html('<h2 style="text-align:center;">Loading trials... please wait.</h2> </br> <div  class="col-md-2 col-md-offset-5"><img src="../dev/img/preloader.gif"></div>')
 
         $.ajax({
             url: 'http://'+document.domain+':'+PORT+'/trials',
