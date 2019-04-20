@@ -1,31 +1,29 @@
-## Running Locally
+## Installation
 
 You must have nodjs installed: https://nodejs.org. Make sure Python 2 is installed.
 
-```
-git clone https://github.com/kmui2/Easy-To-Adapt
-cd Easy-To-Adapt
-sudo npm install -g nodemon
+The following are instructions to download and install the repo.
+
+```sh
+git clone https://github.com/lupyanlab/Easy-To-Adapt-Task
+cd Easy-To-Adapt-Task
 npm install
-npm start
+pm2 start index.js --name Easy-To-Adapt-Task
 ```
 
-When making changes, the html and javascript is in the dev/ directory. To make sure the prod/ (production) directory is
-updated while editing the dev/ directory, install gulp taskrunner globally and run the gulp watch command. 
+## Development
 
-```
-sudo npm install -g gulp
-gulp watch
-```
+If you are working on your local machinese, go to http://localhost:7081.
 
-If you just need to build prod/ , then just call either of these commands:
+If you are working on Sapir, go to http://sapir.psych.wisc.edu/mturk/Easy-To-Adapt-Task/dev.
 
-```
-gulp prod
-```
+The static HTML, CSS, and JavaScript files are in the `dev/` directory, and the Node.js API server is located in the root `./index.js` file.
 
-```
-npm prod
+## Production
+
+When you are done, run the following command on Sapir and go to http://sapir.psych.wisc.edu/mturk/Easy-To-Adapt-Task/prod.
+
+```sh
+npm run prod
 ```
 
-Then, go to http://localhost:7071
